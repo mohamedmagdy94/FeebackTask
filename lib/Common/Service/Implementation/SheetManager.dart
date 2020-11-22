@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:FeebackTask/Common/Service/Contract/sheet_manager_contract.dart';
 import 'package:FeebackTask/Common/Service/Implementation/SheetRespone.dart';
+import 'package:FeebackTask/Common/Service/Implementation/SheetRowsResponse.dart';
 import 'package:FeebackTask/Insert%20Row/Data/insert_row_form.dart';
 
 import 'package:http/http.dart' as http;
@@ -32,7 +35,6 @@ class SheetManager implements SheetManagerContract {
       var model = SheetResponse.fromJson(jsonDic);
       _sheetId = model.spreadsheetId;
       _sheetURL = model.spreadsheetUrl;
-      print("Sheet URL : ${_sheetURL}");
       return Future.value(_sheetId);
     }
   }
@@ -57,7 +59,6 @@ class SheetManager implements SheetManagerContract {
           "Content-Type": "application/json"
         },
         body: body);
-    print("Insert Response : ${response.body}");
     if (response.statusCode == 200) {
       _insertedRowsNumber++;
       return Future.value(true);
@@ -69,6 +70,60 @@ class SheetManager implements SheetManagerContract {
   String _constructInsertUrl() {
     var url =
         "${ApiContsant.GOOGLE_APLE_BASE_URL}spreadsheets/${_sheetId}/values/Sheet1!A${_insertedRowsNumber + 1}?valueInputOption=RAW";
+    return url;
+  }
+
+  @override
+  Future<SheetRowsResponse> getRows(String accessToken) async {
+    // TODO: implement getRows
+    var url = _constructGetRowsUrl();
+
+    var response = await http.get(
+      url,
+      headers: <String, String>{
+        'Authorization': 'Bearer ${accessToken}',
+      },
+    );
+    print("Get Response : ${response.body}");
+    var jsonDic = json.decode(response.body);
+    var model = SheetRowsResponse.fromJson(jsonDic);
+    _insertedRowsNumber = model.values.length;
+    return Future.value(model);
+  }
+
+  String _constructGetRowsUrl() {
+    var url =
+        "${ApiContsant.GOOGLE_APLE_BASE_URL}spreadsheets/${_sheetId}/values/Sheet1!A1:E${_insertedRowsNumber + 1}";
+    return url;
+  }
+
+  @override
+  Future<bool> deleteRow(String accessToken, int index) async {
+    // TODO: implement deleteRow
+    if (_insertedRowsNumber == 0) {
+      return Future.value(false);
+    } else {
+      var url = _constructDeleteRowUrl();
+      var body =
+          '{"requests": [{"deleteDimension": {"range": {"sheetId": 0,"dimension": "ROWS","startIndex": ${index - 1},"endIndex": ${index}}}}],}';
+      var response = await http.post(url,
+          headers: <String, String>{
+            'Authorization': 'Bearer ${accessToken}',
+            "Content-Type": "application/json"
+          },
+          body: body);
+      if (response.statusCode == 200) {
+        this._insertedRowsNumber--;
+        return Future.value(true);
+      } else {
+        return Future.value(false);
+      }
+    }
+  }
+
+  String _constructDeleteRowUrl() {
+    var url =
+        "${ApiContsant.GOOGLE_APLE_BASE_URL}spreadsheets/${_sheetId}:batchUpdate";
     return url;
   }
 }

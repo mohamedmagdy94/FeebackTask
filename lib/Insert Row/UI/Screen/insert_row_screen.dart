@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:FeebackTask/Common/Service/Implementation/SheetManager.dart';
 import 'package:FeebackTask/Common/Widget/feeback_app_bar_widget.dart';
 import 'package:FeebackTask/Common/Widget/feeback_text_field_widget.dart';
 import 'package:FeebackTask/Insert%20Row/Data/insert_row_form.dart';
 import 'package:FeebackTask/Insert%20Row/UI/Bloc/insert_row_screen_bloc.dart';
 import 'package:FeebackTask/Insert%20Row/UI/Bloc/insert_row_screen_bloc_event.dart';
 import 'package:FeebackTask/Insert%20Row/UI/Bloc/insert_row_screen_bloc_state.dart';
+import 'package:FeebackTask/Row%20List/UI/Bloc/row_list_screen_bloc.dart';
+import 'package:FeebackTask/Row%20List/UI/Bloc/row_list_screen_state.dart';
 import 'package:FeebackTask/Row%20List/UI/Screen/row_list_screeen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,7 +37,6 @@ class InsertRowScreen extends StatelessWidget {
   Widget renderScreen(BuildContext context) {
     return BlocBuilder<InsertRowScreenBloc, InsertRowScreenState>(
         builder: (context, state) {
-      print("State : ${state}");
       if (state is InseringtDataInsertRowScreenState) {
         return buildScreen(context);
       } else if (state is SignInUserInsertRowScreenState) {
@@ -62,6 +64,7 @@ class InsertRowScreen extends StatelessWidget {
 
   Widget buildScreen(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppConstants.BACKROUND_COLOR,
       appBar: FeebackAppBarWidget(),
       body: Container(
         width: MediaQuery.of(context).size.width * 0.92,
@@ -137,7 +140,7 @@ class InsertRowScreen extends StatelessWidget {
                   hint: "Email Address",
                   controller: emailAddressEditController,
                   icon: Icon(
-                    Icons.assignment_ind,
+                    Icons.email,
                     color: Colors.grey,
                   ),
                 ),
@@ -214,9 +217,14 @@ class InsertRowScreen extends StatelessWidget {
   _afterDataSaved() {
     Timer(Duration(seconds: 0), () {
       _bloc.add(ErrorAppearedToUserInsertRowScreenEvent());
+      var nextScreen = BlocProvider<RowListScreenBloc>(
+        create: (context) =>
+            RowListScreenBloc(ShowRowsRowListScreenState([], "")),
+        child: RowListScreen(),
+      );
       Navigator.push(
         this.pageContext,
-        new MaterialPageRoute(builder: (context) => RowListScreen()),
+        new MaterialPageRoute(builder: (context) => nextScreen),
       );
     });
   }
