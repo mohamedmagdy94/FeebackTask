@@ -1,4 +1,10 @@
+import 'package:FeebackTask/Insert%20Row/Data/insert_row_form.dart';
+import 'package:FeebackTask/Insert%20Row/UI/Bloc/insert_row_screen_bloc.dart';
+import 'package:FeebackTask/Insert%20Row/UI/Bloc/insert_row_screen_bloc_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'Insert Row/UI/Screen/insert_row_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -26,7 +32,15 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Container(),
+      home: _buildInsertRowScreen(),
+    );
+  }
+
+  Widget _buildInsertRowScreen() {
+    return BlocProvider<InsertRowScreenBloc>(
+      create: (context) =>
+          InsertRowScreenBloc(InseringtDataInsertRowScreenState()),
+      child: InsertRowScreen(),
     );
   }
 }
